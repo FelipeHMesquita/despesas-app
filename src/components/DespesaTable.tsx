@@ -85,11 +85,29 @@ function ModalEditar({
   const [data, setData] = useState(despesa.data);
   const [descricao, setDescricao] = useState(despesa.descricao);
   const [categoria, setCategoria] = useState<Categoria>(despesa.categoria);
-  const [valor, setValor] = useState(String(despesa.valor));
+  const [valor, setValor] = useState(despesa.valor);
+  const [valorDisplay, setValorDisplay] = useState(
+    despesa.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  );
+
+  function formatCurrency(raw: string) {
+    const digits = raw.replace(/\D/g, "");
+    if (!digits) {
+      setValor(0);
+      setValorDisplay("");
+      return;
+    }
+    const cents = parseInt(digits, 10);
+    const reais = cents / 100;
+    setValor(reais);
+    setValorDisplay(
+      reais.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    );
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSave({ data, descricao: descricao.trim(), categoria, valor: parseFloat(valor) });
+    onSave({ data, descricao: descricao.trim(), categoria, valor });
   }
 
   return (
@@ -153,15 +171,18 @@ function ModalEditar({
 
           <div className="mb-6">
             <label className="mb-1.5 block text-xs font-medium text-muted">Valor (R$)</label>
-            <input
-              type="number"
-              value={valor}
-              onChange={(e) => setValor(e.target.value)}
-              className="input-field font-mono"
-              step="0.01"
-              min="0"
-              required
-            />
+            <div className="relative">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted">R$</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={valorDisplay}
+                onChange={(e) => formatCurrency(e.target.value)}
+                className="input-field pl-10 font-mono"
+                placeholder="0,00"
+                required
+              />
+            </div>
           </div>
 
           <div className="flex gap-3">

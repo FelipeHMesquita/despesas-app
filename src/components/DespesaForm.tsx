@@ -14,10 +14,26 @@ export function DespesaForm({ userId }: DespesaFormProps) {
   const [descricao, setDescricao] = useState("");
   const [categoria, setCategoria] = useState<Categoria>("ferramenta");
   const [valor, setValor] = useState("");
+  const [valorDisplay, setValorDisplay] = useState("");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const supabase = createClient();
+
+  function formatCurrency(raw: string) {
+    const digits = raw.replace(/\D/g, "");
+    if (!digits) {
+      setValor("");
+      setValorDisplay("");
+      return;
+    }
+    const cents = parseInt(digits, 10);
+    const reais = cents / 100;
+    setValor(reais.toString());
+    setValorDisplay(
+      reais.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,6 +53,7 @@ export function DespesaForm({ userId }: DespesaFormProps) {
     if (!error) {
       setDescricao("");
       setValor("");
+      setValorDisplay("");
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
     }
@@ -89,16 +106,18 @@ export function DespesaForm({ userId }: DespesaFormProps) {
 
         <div>
           <label className="mb-1.5 block text-xs font-medium text-muted">Valor (R$)</label>
-          <input
-            type="number"
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            className="input-field font-mono"
-            placeholder="0,00"
-            step="0.01"
-            min="0"
-            required
-          />
+          <div className="relative">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted">R$</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={valorDisplay}
+              onChange={(e) => formatCurrency(e.target.value)}
+              className="input-field pl-10 font-mono"
+              placeholder="0,00"
+              required
+            />
+          </div>
         </div>
 
         <button type="submit" disabled={saving} className="btn-primary w-full">
