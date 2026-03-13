@@ -227,14 +227,22 @@ export function DespesaTable({ despesas, loading }: DespesaTableProps) {
 
   async function handleDelete(despesa: Despesa) {
     setDeletingId(despesa.id);
-    await supabase.from("despesas").delete().eq("id", despesa.id);
+    const { error } = await supabase.from("despesas").delete().eq("id", despesa.id);
+    if (error) {
+      console.error("Erro ao excluir:", error);
+      alert(`Erro ao excluir: ${error.message}`);
+    }
     setDeletingId(null);
     setConfirmDelete(null);
   }
 
-  async function handleEdit(id: string, data: Partial<Despesa>) {
+  async function handleEdit(id: string, updates: Partial<Despesa>) {
     setSavingEdit(true);
-    await supabase.from("despesas").update(data).eq("id", id);
+    const { error } = await supabase.from("despesas").update(updates).eq("id", id);
+    if (error) {
+      console.error("Erro ao editar:", error);
+      alert(`Erro ao editar: ${error.message}`);
+    }
     setSavingEdit(false);
     setEditingDespesa(null);
   }
