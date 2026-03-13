@@ -80,18 +80,6 @@ export function DespesaForm({ userId }: DespesaFormProps) {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-muted">Despesa</label>
-          <input
-            type="text"
-            value={descricao}
-            onChange={(e) => setDescricao(e.target.value)}
-            className="input-field"
-            placeholder="Ex: Meta Ads campanha janeiro"
-            required
-          />
-        </div>
-
-        <div>
           <label className="mb-1.5 block text-xs font-medium text-muted">Categoria</label>
           <select
             value={categoria}
@@ -102,6 +90,18 @@ export function DespesaForm({ userId }: DespesaFormProps) {
               <option key={cat.value} value={cat.value}>{cat.label}</option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-xs font-medium text-muted">Despesa</label>
+          <input
+            type="text"
+            value={descricao}
+            onChange={(e) => setDescricao(e.target.value)}
+            className="input-field"
+            placeholder="Ex: Meta Ads campanha janeiro"
+            required
+          />
         </div>
 
         <div>
