@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { CATEGORIAS } from "@/lib/types";
 import type { Categoria, DespesaItem } from "@/lib/types";
 
@@ -41,8 +42,8 @@ export function DespesaItensModal({
     setRemovingId(null);
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="glass-card relative z-10 w-full max-w-md animate-fade-in">
         {/* Header */}
@@ -146,6 +147,7 @@ export function DespesaItensModal({
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
