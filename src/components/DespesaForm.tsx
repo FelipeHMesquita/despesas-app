@@ -118,10 +118,10 @@ export function DespesaForm({
               <button
                 type="button"
                 onClick={() => setShowCategoriasModal(true)}
-                className="rounded-md p-1 text-muted/50 transition-colors hover:text-accent"
+                className="rounded-md p-1 text-muted transition-colors hover:text-accent"
                 title="Gerenciar categorias"
               >
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                 </svg>
               </button>
@@ -153,10 +153,10 @@ export function DespesaForm({
               <button
                 type="button"
                 onClick={() => setShowItensModal(true)}
-                className="rounded-md p-1 text-muted/50 transition-colors hover:text-accent"
+                className="rounded-md p-1 text-muted transition-colors hover:text-accent"
                 title="Gerenciar itens"
               >
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                 </svg>
               </button>
