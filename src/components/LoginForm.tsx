@@ -127,7 +127,7 @@ export function LoginForm() {
             setError("");
             setMessage("");
           }}
-          className="mt-6 w-full text-center text-xs text-muted transition-colors hover:text-white"
+          className="mt-6 w-full text-center text-xs text-muted transition-colors hover:text-foreground"
         >
           {isSignUp
             ? "Já tem conta? Entrar"

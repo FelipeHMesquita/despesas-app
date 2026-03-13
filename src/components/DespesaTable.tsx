@@ -44,7 +44,7 @@ function ModalExcluir({
           <button
             onClick={onCancel}
             disabled={loading}
-            className="flex-1 rounded-lg border border-surface-3 px-4 py-2.5 text-sm text-muted transition-colors hover:text-white disabled:opacity-50"
+            className="flex-1 rounded-lg border border-surface-3 px-4 py-2.5 text-sm text-muted transition-colors hover:text-foreground disabled:opacity-50"
           >
             Cancelar
           </button>
@@ -124,7 +124,7 @@ function ModalEditar({
             </div>
             <h3 className="font-bold">Editar despesa</h3>
           </div>
-          <button onClick={onCancel} className="rounded-md p-1.5 text-muted transition-colors hover:text-white">
+          <button onClick={onCancel} className="rounded-md p-1.5 text-muted transition-colors hover:text-foreground">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -190,7 +190,7 @@ function ModalEditar({
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className="flex-1 rounded-lg border border-surface-3 px-4 py-2.5 text-sm text-muted transition-colors hover:text-white disabled:opacity-50"
+              className="flex-1 rounded-lg border border-surface-3 px-4 py-2.5 text-sm text-muted transition-colors hover:text-foreground disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -336,7 +336,7 @@ export function DespesaTable({ despesas, loading }: DespesaTableProps) {
                       {/* Editar */}
                       <button
                         onClick={() => setEditingDespesa(despesa)}
-                        className="rounded-md p-1.5 text-muted/50 transition-colors hover:bg-surface-2 hover:text-white"
+                        className="rounded-md p-1.5 text-muted/50 transition-colors hover:bg-surface-2 hover:text-foreground"
                         title="Editar"
                       >
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

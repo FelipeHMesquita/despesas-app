@@ -2,31 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Light mode (default) */
+:root {
+  --surface-0: 248 250 252;
+  --surface-1: 241 245 249;
+  --surface-2: 226 232 240;
+  --surface-3: 203 213 225;
+  --accent: 5 150 105;
+  --accent-dim: 4 120 87;
+  --accent-glow: rgba(5, 150, 105, 0.15);
+  --danger: 239 68 68;
+  --muted: 100 116 139;
+  --foreground: 15 23 42;
+}
+
+/* Dark mode */
+.dark {
+  --surface-0: 10 10 15;
+  --surface-1: 18 18 26;
+  --surface-2: 26 26 38;
+  --surface-3: 36 36 52;
+  --accent: 110 231 183;
+  --accent-dim: 52 211 153;
+  --accent-glow: rgba(110, 231, 183, 0.15);
+  --danger: 248 113 113;
+  --muted: 100 116 139;
+  --foreground: 255 255 255;
+}
+
 * {
   scrollbar-width: thin;
-  scrollbar-color: #242434 transparent;
+  scrollbar-color: rgb(var(--surface-3)) transparent;
 }
 
 ::selection {
-  background: rgba(110, 231, 183, 0.3);
+  background: var(--accent-glow);
 }
 
+/* btn-primary needs explicit text color override for light mode */
+
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
   cursor: pointer;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
 }
 
 @layer components {
   .input-field {
     @apply w-full rounded-lg border border-surface-3 bg-surface-1 px-4 py-3
-           text-sm text-white placeholder-muted
+           text-sm text-foreground placeholder-muted
            outline-none transition-all duration-200
            focus:border-accent focus:ring-1 focus:ring-accent/30;
   }
 
   .btn-primary {
     @apply relative flex items-center justify-center gap-2 rounded-lg
-           bg-accent px-6 py-3 text-sm font-semibold text-surface-0
+           bg-accent px-6 py-3 text-sm font-semibold text-white
            transition-all duration-200
            hover:bg-accent-dim hover:shadow-lg hover:shadow-accent/20
            active:scale-[0.98]

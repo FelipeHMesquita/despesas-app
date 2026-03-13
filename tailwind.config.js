@@ -1,22 +1,24 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
         surface: {
-          0: "#0a0a0f",
-          1: "#12121a",
-          2: "#1a1a26",
-          3: "#242434",
+          0: "rgb(var(--surface-0) / <alpha-value>)",
+          1: "rgb(var(--surface-1) / <alpha-value>)",
+          2: "rgb(var(--surface-2) / <alpha-value>)",
+          3: "rgb(var(--surface-3) / <alpha-value>)",
         },
         accent: {
-          DEFAULT: "#6ee7b7",
-          dim: "#34d399",
-          glow: "rgba(110, 231, 183, 0.15)",
+          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
+          dim: "rgb(var(--accent-dim) / <alpha-value>)",
+          glow: "var(--accent-glow)",
         },
-        danger: "#f87171",
-        muted: "#64748b",
+        danger: "rgb(var(--danger) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        foreground: "rgb(var(--foreground) / <alpha-value>)",
       },
       fontFamily: {
         sans: ['"DM Sans"', "system-ui", "sans-serif"],

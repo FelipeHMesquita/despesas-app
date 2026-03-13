@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase-browser";
 import { DespesaForm } from "@/components/DespesaForm";
 import { DespesaTable } from "@/components/DespesaTable";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import type { Despesa } from "@/lib/types";
 import type { User } from "@supabase/supabase-js";
 
@@ -175,8 +176,8 @@ export function Dashboard({ user }: DashboardProps) {
                   onClick={() => handleChangePeriodo(p)}
                   className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                     periodo === p
-                      ? "bg-surface-0 text-white shadow-sm"
-                      : "text-muted hover:text-white"
+                      ? "bg-surface-0 text-foreground shadow-sm"
+                      : "text-muted hover:text-foreground"
                   }`}
                 >
                   {p === "semana" ? "Semana" : p === "mes" ? "Mês" : "Ano"}
@@ -185,14 +186,15 @@ export function Dashboard({ user }: DashboardProps) {
             </div>
           </div>
 
-          {/* Direita: total + sair */}
-          <div className="flex items-center gap-6">
+          {/* Direita: total + theme + sair */}
+          <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-xs text-muted capitalize">{periodoLabel}</p>
               <p className="font-mono text-lg font-medium text-accent">
                 R$ {totalPeriodo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               </p>
             </div>
+            <ThemeToggle />
             <button
               onClick={handleLogout}
               className="rounded-lg border border-surface-3 px-3 py-2 text-xs text-muted transition-colors hover:border-danger/50 hover:text-danger"
