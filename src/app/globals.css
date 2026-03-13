@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #242434 transparent;
+}
+
+::selection {
+  background: rgba(110, 231, 183, 0.3);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+@layer components {
+  .input-field {
+    @apply w-full rounded-lg border border-surface-3 bg-surface-1 px-4 py-3
+           text-sm text-white placeholder-muted
+           outline-none transition-all duration-200
+           focus:border-accent focus:ring-1 focus:ring-accent/30;
+  }
+
+  .btn-primary {
+    @apply relative flex items-center justify-center gap-2 rounded-lg
+           bg-accent px-6 py-3 text-sm font-semibold text-surface-0
+           transition-all duration-200
+           hover:bg-accent-dim hover:shadow-lg hover:shadow-accent/20
+           active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none;
+  }
+
+  .glass-card {
+    @apply rounded-2xl border border-surface-3/50 bg-surface-1/80 backdrop-blur-sm;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.35s ease-out forwards;
+}

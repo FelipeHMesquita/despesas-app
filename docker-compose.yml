@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  app:
+    image: ghcr.io/felipehmesquita/despesas-app:latest
+    networks:
+      - network_swarm_public
+    environment:
+      - NEXT_PUBLIC_SUPABASE_URL=https://thhbmqpntvspgvfbcfvf.supabase.co
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoaGJtcXBudHZzcGd2ZmJjZnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0MjE2MjcsImV4cCI6MjA4Nzk5NzYyN30.H2iYd9nN1Jrbalju31cmXfrlesGHoW2ks4_E5KBJE3Y
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.despesas_app.entrypoints=websecure
+        - traefik.http.routers.despesas_app.rule=Host(`despesas.viniciusoares.com.br`)
+        - traefik.http.routers.despesas_app.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.despesas_app.service=despesas_app
+        - traefik.http.services.despesas_app.loadbalancer.server.port=3000
+        - traefik.http.services.despesas_app.loadbalancer.passHostHeader=true
+
+networks:
+  network_swarm_public:
+    external: true
