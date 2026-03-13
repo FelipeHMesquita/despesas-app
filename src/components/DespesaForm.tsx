@@ -2,29 +2,48 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase-browser";
-import { CATEGORIAS } from "@/lib/types";
 import { DespesaItensModal } from "@/components/DespesaItensModal";
-import type { Categoria, DespesaItem } from "@/lib/types";
+import { CategoriasModal } from "@/components/CategoriasModal";
+import type { CategoriaItem, DespesaItem } from "@/lib/types";
 
 interface DespesaFormProps {
   userId: string;
-  itensPorCategoria: (cat: Categoria) => DespesaItem[];
-  onAddItem: (categoria: Categoria, nome: string) => Promise<DespesaItem | null>;
+  categorias: CategoriaItem[];
+  itensPorCategoria: (cat: string) => DespesaItem[];
+  onAddItem: (categoria: string, nome: string) => Promise<DespesaItem | null>;
+  onUpdateItem: (id: string, nome: string) => Promise<boolean>;
   onRemoveItem: (id: string) => Promise<boolean>;
+  onAddCategoria: (nome: string, label: string, cor: string) => Promise<CategoriaItem | null>;
+  onUpdateCategoria: (id: string, updates: Partial<CategoriaItem>) => Promise<boolean>;
+  onRemoveCategoria: (id: string) => Promise<boolean>;
 }
 
-export function DespesaForm({ userId, itensPorCategoria, onAddItem, onRemoveItem }: DespesaFormProps) {
+export function DespesaForm({
+  userId,
+  categorias,
+  itensPorCategoria,
+  onAddItem,
+  onUpdateItem,
+  onRemoveItem,
+  onAddCategoria,
+  onUpdateCategoria,
+  onRemoveCategoria,
+}: DespesaFormProps) {
   const [data, setData] = useState(() => new Date().toISOString().split("T")[0]);
   const [descricao, setDescricao] = useState("");
-  const [categoria, setCategoria] = useState<Categoria>("ferramenta");
+  const [categoria, setCategoria] = useState("");
   const [valor, setValor] = useState("");
   const [valorDisplay, setValorDisplay] = useState("");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showItensModal, setShowItensModal] = useState(false);
+  const [showCategoriasModal, setShowCategoriasModal] = useState(false);
 
   const supabase = createClient();
-  const itensCategoria = itensPorCategoria(categoria);
+
+  // Auto-select first category if none selected
+  const categoriaAtual = categoria || (categorias.length > 0 ? categorias[0].nome : "");
+  const itensCategoria = itensPorCategoria(categoriaAtual);
 
   function formatCurrency(raw: string) {
     const digits = raw.replace(/\D/g, "");
@@ -41,7 +60,7 @@ export function DespesaForm({ userId, itensPorCategoria, onAddItem, onRemoveItem
     );
   }
 
-  function handleCategoriaChange(cat: Categoria) {
+  function handleCategoriaChange(cat: string) {
     setCategoria(cat);
     setDescricao("");
   }
@@ -56,7 +75,7 @@ export function DespesaForm({ userId, itensPorCategoria, onAddItem, onRemoveItem
     const { error } = await supabase.from("despesas").insert({
       data,
       descricao: descricao.trim(),
-      categoria,
+      categoria: categoriaAtual,
       valor: parseFloat(valor),
       user_id: userId,
     });
@@ -94,16 +113,38 @@ export function DespesaForm({ userId, itensPorCategoria, onAddItem, onRemoveItem
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-muted">Categoria</label>
-            <select
-              value={categoria}
-              onChange={(e) => handleCategoriaChange(e.target.value as Categoria)}
-              className={`input-field ${selectArrowClass}`}
-            >
-              {CATEGORIAS.map((cat) => (
-                <option key={cat.value} value={cat.value}>{cat.label}</option>
-              ))}
-            </select>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="text-xs font-medium text-muted">Categoria</label>
+              <button
+                type="button"
+                onClick={() => setShowCategoriasModal(true)}
+                className="rounded-md p-1 text-muted/50 transition-colors hover:text-accent"
+                title="Gerenciar categorias"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+              </button>
+            </div>
+            {categorias.length > 0 ? (
+              <select
+                value={categoriaAtual}
+                onChange={(e) => handleCategoriaChange(e.target.value)}
+                className={`input-field ${selectArrowClass}`}
+              >
+                {categorias.map((cat) => (
+                  <option key={cat.id} value={cat.nome}>{cat.label}</option>
+                ))}
+              </select>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowCategoriasModal(true)}
+                className="input-field w-full text-left text-muted/60 hover:border-accent/40"
+              >
+                Cadastre categorias...
+              </button>
+            )}
           </div>
 
           <div>
@@ -183,11 +224,23 @@ export function DespesaForm({ userId, itensPorCategoria, onAddItem, onRemoveItem
 
       {showItensModal && (
         <DespesaItensModal
-          categoriaInicial={categoria}
+          categoriaInicial={categoriaAtual}
+          categorias={categorias}
           itensPorCategoria={itensPorCategoria}
           onAdd={onAddItem}
+          onUpdate={onUpdateItem}
           onRemove={onRemoveItem}
           onClose={() => setShowItensModal(false)}
+        />
+      )}
+
+      {showCategoriasModal && (
+        <CategoriasModal
+          categorias={categorias}
+          onAdd={onAddCategoria}
+          onUpdate={onUpdateCategoria}
+          onRemove={onRemoveCategoria}
+          onClose={() => setShowCategoriasModal(false)}
         />
       )}
     </>

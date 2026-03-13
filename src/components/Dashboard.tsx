@@ -6,6 +6,7 @@ import { DespesaForm } from "@/components/DespesaForm";
 import { DespesaTable } from "@/components/DespesaTable";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useDespesaItens } from "@/lib/useDespesaItens";
+import { useCategorias } from "@/lib/useCategorias";
 import type { Despesa } from "@/lib/types";
 import type { User } from "@supabase/supabase-js";
 
@@ -64,7 +65,15 @@ export function Dashboard({ user }: DashboardProps) {
   const [periodo, setPeriodo] = useState<Periodo>("mes");
   const [offset, setOffset] = useState(0);
   const supabase = createClient();
-  const { itensPorCategoria, addItem, removeItem } = useDespesaItens(user.id);
+  const { itensPorCategoria, addItem, updateItem, removeItem } = useDespesaItens(user.id);
+  const {
+    categorias,
+    corPorNome,
+    labelPorNome,
+    addCategoria,
+    updateCategoria,
+    removeCategoria,
+  } = useCategorias(user.id);
 
   const fetchDespesas = useCallback(async () => {
     const { data, error } = await supabase
@@ -219,9 +228,28 @@ export function Dashboard({ user }: DashboardProps) {
       <main className="mx-auto max-w-7xl p-6">
         <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
           <div className="lg:sticky lg:top-6 lg:self-start">
-            <DespesaForm userId={user.id} itensPorCategoria={itensPorCategoria} onAddItem={addItem} onRemoveItem={removeItem} />
+            <DespesaForm
+              userId={user.id}
+              categorias={categorias}
+              itensPorCategoria={itensPorCategoria}
+              onAddItem={addItem}
+              onUpdateItem={updateItem}
+              onRemoveItem={removeItem}
+              onAddCategoria={addCategoria}
+              onUpdateCategoria={updateCategoria}
+              onRemoveCategoria={removeCategoria}
+            />
           </div>
-          <DespesaTable despesas={despesasFiltradas} loading={loading} onDelete={handleDeleteLocal} onEdit={handleEditLocal} itensPorCategoria={itensPorCategoria} />
+          <DespesaTable
+            despesas={despesasFiltradas}
+            loading={loading}
+            onDelete={handleDeleteLocal}
+            onEdit={handleEditLocal}
+            categorias={categorias}
+            corPorNome={corPorNome}
+            labelPorNome={labelPorNome}
+            itensPorCategoria={itensPorCategoria}
+          />
         </div>
       </main>
     </div>

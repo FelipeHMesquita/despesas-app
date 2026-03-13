@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase-browser";
-import type { DespesaItem, Categoria } from "@/lib/types";
+import type { DespesaItem } from "@/lib/types";
 
 export function useDespesaItens(userId: string) {
   const [itens, setItens] = useState<DespesaItem[]>([]);
@@ -27,11 +27,11 @@ export function useDespesaItens(userId: string) {
   }, [fetchItens]);
 
   const itensPorCategoria = useCallback(
-    (cat: Categoria) => itens.filter((i) => i.categoria === cat),
+    (cat: string) => itens.filter((i) => i.categoria === cat),
     [itens]
   );
 
-  async function addItem(categoria: Categoria, nome: string) {
+  async function addItem(categoria: string, nome: string) {
     const { data, error } = await supabase
       .from("despesa_itens")
       .insert({ user_id: userId, categoria, nome: nome.trim() })
@@ -50,6 +50,16 @@ export function useDespesaItens(userId: string) {
     return data as DespesaItem;
   }
 
+  async function updateItem(id: string, nome: string) {
+    const { error } = await supabase.from("despesa_itens").update({ nome: nome.trim() }).eq("id", id);
+    if (error) {
+      alert(`Erro ao atualizar: ${error.message}`);
+      return false;
+    }
+    setItens((prev) => prev.map((i) => (i.id === id ? { ...i, nome: nome.trim() } : i)));
+    return true;
+  }
+
   async function removeItem(id: string) {
     const { error } = await supabase.from("despesa_itens").delete().eq("id", id);
     if (error) {
@@ -60,5 +70,5 @@ export function useDespesaItens(userId: string) {
     return true;
   }
 
-  return { itens, loading, itensPorCategoria, addItem, removeItem, refetch: fetchItens };
+  return { itens, loading, itensPorCategoria, addItem, updateItem, removeItem, refetch: fetchItens };
 }

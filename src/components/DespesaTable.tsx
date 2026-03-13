@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase-browser";
-import { CATEGORIA_CORES, CATEGORIAS } from "@/lib/types";
-import type { Despesa, Categoria, DespesaItem } from "@/lib/types";
+import type { Despesa, CategoriaItem, DespesaItem } from "@/lib/types";
 
 interface DespesaTableProps {
   despesas: Despesa[];
   loading: boolean;
   onDelete: (id: string) => void;
   onEdit: (id: string, updates: Partial<Despesa>) => void;
-  itensPorCategoria: (cat: Categoria) => DespesaItem[];
+  categorias: CategoriaItem[];
+  corPorNome: (nome: string) => string;
+  labelPorNome: (nome: string) => string;
+  itensPorCategoria: (cat: string) => DespesaItem[];
 }
 
 function formatDate(dateStr: string) {
@@ -41,7 +43,7 @@ function ModalExcluir({
         </div>
         <h3 className="mb-2 text-lg font-bold">Excluir despesa</h3>
         <p className="mb-1 text-sm text-muted">Tem certeza que deseja excluir</p>
-        <p className="mb-1 text-sm font-medium">"{despesa.descricao}"?</p>
+        <p className="mb-1 text-sm font-medium">&quot;{despesa.descricao}&quot;?</p>
         <p className="mb-7 text-xs text-muted/70">Esta ação não pode ser desfeita.</p>
         <div className="flex gap-3">
           <button
@@ -79,17 +81,19 @@ function ModalEditar({
   onSave,
   onCancel,
   loading,
+  categorias,
   itensPorCategoria,
 }: {
   despesa: Despesa;
   onSave: (data: Partial<Despesa>) => void;
   onCancel: () => void;
   loading: boolean;
-  itensPorCategoria: (cat: Categoria) => DespesaItem[];
+  categorias: CategoriaItem[];
+  itensPorCategoria: (cat: string) => DespesaItem[];
 }) {
   const [data, setData] = useState(despesa.data);
   const [descricao, setDescricao] = useState(despesa.descricao);
-  const [categoria, setCategoria] = useState<Categoria>(despesa.categoria);
+  const [categoria, setCategoria] = useState(despesa.categoria);
   const [valor, setValor] = useState(despesa.valor);
   const [valorDisplay, setValorDisplay] = useState(
     despesa.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -115,6 +119,8 @@ function ModalEditar({
     e.preventDefault();
     onSave({ data, descricao: descricao.trim(), categoria, valor });
   }
+
+  const selectArrowClass = "cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M2%204l4%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_16px_center] bg-no-repeat pr-10";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -155,17 +161,21 @@ function ModalEditar({
               <select
                 value={categoria}
                 onChange={(e) => {
-                  const cat = e.target.value as Categoria;
+                  const cat = e.target.value;
                   setCategoria(cat);
                   if (!itensPorCategoria(cat).some((i) => i.nome === descricao)) {
                     setDescricao("");
                   }
                 }}
-                className="input-field cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M2%204l4%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_16px_center] bg-no-repeat pr-10"
+                className={`input-field ${selectArrowClass}`}
               >
-                {CATEGORIAS.map((cat) => (
-                  <option key={cat.value} value={cat.value}>{cat.label}</option>
+                {categorias.map((cat) => (
+                  <option key={cat.id} value={cat.nome}>{cat.label}</option>
                 ))}
+                {/* Keep legacy value if not in dynamic categories */}
+                {!categorias.some((c) => c.nome === categoria) && categoria && (
+                  <option value={categoria}>{categoria}</option>
+                )}
               </select>
             </div>
           </div>
@@ -176,7 +186,7 @@ function ModalEditar({
               <select
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
-                className="input-field cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M2%204l4%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_16px_center] bg-no-repeat pr-10"
+                className={`input-field ${selectArrowClass}`}
                 required
               >
                 <option value="">Selecione...</option>
@@ -247,7 +257,16 @@ function ModalEditar({
 }
 
 // Tabela principal
-export function DespesaTable({ despesas, loading, onDelete, onEdit, itensPorCategoria }: DespesaTableProps) {
+export function DespesaTable({
+  despesas,
+  loading,
+  onDelete,
+  onEdit,
+  categorias,
+  corPorNome,
+  labelPorNome,
+  itensPorCategoria,
+}: DespesaTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingDespesa, setEditingDespesa] = useState<Despesa | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Despesa | null>(null);
@@ -258,7 +277,6 @@ export function DespesaTable({ despesas, loading, onDelete, onEdit, itensPorCate
     setDeletingId(despesa.id);
     const { error } = await supabase.from("despesas").delete().eq("id", despesa.id);
     if (error) {
-      console.error("Erro ao excluir:", error);
       alert(`Erro ao excluir: ${error.message}`);
     } else {
       onDelete(despesa.id);
@@ -271,7 +289,6 @@ export function DespesaTable({ despesas, loading, onDelete, onEdit, itensPorCate
     setSavingEdit(true);
     const { error } = await supabase.from("despesas").update(updates).eq("id", id);
     if (error) {
-      console.error("Erro ao editar:", error);
       alert(`Erro ao editar: ${error.message}`);
     } else {
       onEdit(id, updates);
@@ -336,65 +353,69 @@ export function DespesaTable({ despesas, loading, onDelete, onEdit, itensPorCate
               </tr>
             </thead>
             <tbody>
-              {despesas.map((despesa, i) => (
-                <tr
-                  key={despesa.id}
-                  className="animate-slide-in border-b border-surface-3/20 transition-colors hover:bg-surface-2/30"
-                  style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
-                >
-                  <td className="whitespace-nowrap px-6 py-3.5 font-mono text-sm text-muted">
-                    {formatDate(despesa.data)}
-                  </td>
-                  <td className="px-6 py-3.5">
-                    <span
-                      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
-                      style={{
-                        backgroundColor: `${CATEGORIA_CORES[despesa.categoria]}15`,
-                        color: CATEGORIA_CORES[despesa.categoria],
-                      }}
-                    >
+              {despesas.map((despesa, i) => {
+                const cor = corPorNome(despesa.categoria);
+                const label = labelPorNome(despesa.categoria);
+                return (
+                  <tr
+                    key={despesa.id}
+                    className="animate-slide-in border-b border-surface-3/20 transition-colors hover:bg-surface-2/30"
+                    style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
+                  >
+                    <td className="whitespace-nowrap px-6 py-3.5 font-mono text-sm text-muted">
+                      {formatDate(despesa.data)}
+                    </td>
+                    <td className="px-6 py-3.5">
                       <span
-                        className="h-1.5 w-1.5 rounded-full"
-                        style={{ backgroundColor: CATEGORIA_CORES[despesa.categoria] }}
-                      />
-                      {despesa.categoria}
-                    </span>
-                  </td>
-                  <td className="w-[300px] px-6 py-3.5 text-sm">{despesa.descricao}</td>
-                  <td className="whitespace-nowrap px-6 py-3.5 font-mono text-sm font-medium">
-                    R$ {despesa.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="px-6 py-3.5">
-                    <div className="flex items-center gap-1.5">
-                      {/* Editar */}
-                      <button
-                        onClick={() => setEditingDespesa(despesa)}
-                        className="rounded-md p-1.5 text-muted/50 transition-colors hover:bg-surface-2 hover:text-foreground"
-                        title="Editar"
+                        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
+                        style={{
+                          backgroundColor: `${cor}15`,
+                          color: cor,
+                        }}
                       >
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </button>
-                      {/* Excluir */}
-                      <button
-                        onClick={() => setConfirmDelete(despesa)}
-                        disabled={deletingId === despesa.id}
-                        className="rounded-md p-1.5 text-muted/50 transition-colors hover:bg-danger/10 hover:text-danger disabled:opacity-30"
-                        title="Excluir"
-                      >
-                        {deletingId === despesa.id ? (
-                          <div className="h-3.5 w-3.5 animate-spin rounded-full border border-danger border-t-transparent" />
-                        ) : (
+                        <span
+                          className="h-1.5 w-1.5 rounded-full"
+                          style={{ backgroundColor: cor }}
+                        />
+                        {label}
+                      </span>
+                    </td>
+                    <td className="w-[300px] px-6 py-3.5 text-sm">{despesa.descricao}</td>
+                    <td className="whitespace-nowrap px-6 py-3.5 font-mono text-sm font-medium">
+                      R$ {despesa.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="px-6 py-3.5">
+                      <div className="flex items-center gap-1.5">
+                        {/* Editar */}
+                        <button
+                          onClick={() => setEditingDespesa(despesa)}
+                          className="rounded-md p-1.5 text-muted/50 transition-colors hover:bg-surface-2 hover:text-foreground"
+                          title="Editar"
+                        >
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        </button>
+                        {/* Excluir */}
+                        <button
+                          onClick={() => setConfirmDelete(despesa)}
+                          disabled={deletingId === despesa.id}
+                          className="rounded-md p-1.5 text-muted/50 transition-colors hover:bg-danger/10 hover:text-danger disabled:opacity-30"
+                          title="Excluir"
+                        >
+                          {deletingId === despesa.id ? (
+                            <div className="h-3.5 w-3.5 animate-spin rounded-full border border-danger border-t-transparent" />
+                          ) : (
+                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -417,6 +438,7 @@ export function DespesaTable({ despesas, loading, onDelete, onEdit, itensPorCate
           onSave={(data) => handleEdit(editingDespesa.id, data)}
           onCancel={() => setEditingDespesa(null)}
           loading={savingEdit}
+          categorias={categorias}
           itensPorCategoria={itensPorCategoria}
         />
       )}
