@@ -23,6 +23,14 @@ export const CATEGORIAS: { value: Categoria; label: string }[] = [
   { value: "servicos", label: "Serviços" },
 ];
 
+export interface DespesaItem {
+  id: string;
+  created_at: string;
+  user_id: string;
+  categoria: Categoria;
+  nome: string;
+}
+
 export const CATEGORIA_CORES: Record<Categoria, string> = {
   ferramenta: "#6ee7b7",
   anuncios: "#fbbf24",

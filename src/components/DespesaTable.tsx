@@ -3,11 +3,14 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase-browser";
 import { CATEGORIA_CORES, CATEGORIAS } from "@/lib/types";
-import type { Despesa, Categoria } from "@/lib/types";
+import type { Despesa, Categoria, DespesaItem } from "@/lib/types";
 
 interface DespesaTableProps {
   despesas: Despesa[];
   loading: boolean;
+  onDelete: (id: string) => void;
+  onEdit: (id: string, updates: Partial<Despesa>) => void;
+  itensPorCategoria: (cat: Categoria) => DespesaItem[];
 }
 
 function formatDate(dateStr: string) {
@@ -76,11 +79,13 @@ function ModalEditar({
   onSave,
   onCancel,
   loading,
+  itensPorCategoria,
 }: {
   despesa: Despesa;
   onSave: (data: Partial<Despesa>) => void;
   onCancel: () => void;
   loading: boolean;
+  itensPorCategoria: (cat: Categoria) => DespesaItem[];
 }) {
   const [data, setData] = useState(despesa.data);
   const [descricao, setDescricao] = useState(despesa.descricao);
@@ -89,6 +94,7 @@ function ModalEditar({
   const [valorDisplay, setValorDisplay] = useState(
     despesa.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   );
+  const itensCategoria = itensPorCategoria(categoria);
 
   function formatCurrency(raw: string) {
     const digits = raw.replace(/\D/g, "");
@@ -148,7 +154,13 @@ function ModalEditar({
               <label className="mb-1.5 block text-xs font-medium text-muted">Categoria</label>
               <select
                 value={categoria}
-                onChange={(e) => setCategoria(e.target.value as Categoria)}
+                onChange={(e) => {
+                  const cat = e.target.value as Categoria;
+                  setCategoria(cat);
+                  if (!itensPorCategoria(cat).some((i) => i.nome === descricao)) {
+                    setDescricao("");
+                  }
+                }}
                 className="input-field cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M2%204l4%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_16px_center] bg-no-repeat pr-10"
               >
                 {CATEGORIAS.map((cat) => (
@@ -160,13 +172,30 @@ function ModalEditar({
 
           <div className="mb-4">
             <label className="mb-1.5 block text-xs font-medium text-muted">Despesa</label>
-            <input
-              type="text"
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-              className="input-field"
-              required
-            />
+            {itensCategoria.length > 0 ? (
+              <select
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+                className="input-field cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M2%204l4%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_16px_center] bg-no-repeat pr-10"
+                required
+              >
+                <option value="">Selecione...</option>
+                {!itensCategoria.some((i) => i.nome === descricao) && descricao && (
+                  <option value={descricao}>{descricao}</option>
+                )}
+                {itensCategoria.map((item) => (
+                  <option key={item.id} value={item.nome}>{item.nome}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+                className="input-field"
+                required
+              />
+            )}
           </div>
 
           <div className="mb-6">
@@ -218,7 +247,7 @@ function ModalEditar({
 }
 
 // Tabela principal
-export function DespesaTable({ despesas, loading }: DespesaTableProps) {
+export function DespesaTable({ despesas, loading, onDelete, onEdit, itensPorCategoria }: DespesaTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingDespesa, setEditingDespesa] = useState<Despesa | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Despesa | null>(null);
@@ -231,6 +260,8 @@ export function DespesaTable({ despesas, loading }: DespesaTableProps) {
     if (error) {
       console.error("Erro ao excluir:", error);
       alert(`Erro ao excluir: ${error.message}`);
+    } else {
+      onDelete(despesa.id);
     }
     setDeletingId(null);
     setConfirmDelete(null);
@@ -242,6 +273,8 @@ export function DespesaTable({ despesas, loading }: DespesaTableProps) {
     if (error) {
       console.error("Erro ao editar:", error);
       alert(`Erro ao editar: ${error.message}`);
+    } else {
+      onEdit(id, updates);
     }
     setSavingEdit(false);
     setEditingDespesa(null);
@@ -384,6 +417,7 @@ export function DespesaTable({ despesas, loading }: DespesaTableProps) {
           onSave={(data) => handleEdit(editingDespesa.id, data)}
           onCancel={() => setEditingDespesa(null)}
           loading={savingEdit}
+          itensPorCategoria={itensPorCategoria}
         />
       )}
     </>

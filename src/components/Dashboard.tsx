@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase-browser";
 import { DespesaForm } from "@/components/DespesaForm";
 import { DespesaTable } from "@/components/DespesaTable";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useDespesaItens } from "@/lib/useDespesaItens";
 import type { Despesa } from "@/lib/types";
 import type { User } from "@supabase/supabase-js";
 
@@ -63,6 +64,7 @@ export function Dashboard({ user }: DashboardProps) {
   const [periodo, setPeriodo] = useState<Periodo>("mes");
   const [offset, setOffset] = useState(0);
   const supabase = createClient();
+  const { itensPorCategoria, addItem, removeItem } = useDespesaItens(user.id);
 
   const fetchDespesas = useCallback(async () => {
     const { data, error } = await supabase
@@ -104,6 +106,14 @@ export function Dashboard({ user }: DashboardProps) {
 
     return () => { supabase.removeChannel(channel); };
   }, [fetchDespesas]);
+
+  const handleDeleteLocal = useCallback((id: string) => {
+    setDespesas((prev) => prev.filter((d) => d.id !== id));
+  }, []);
+
+  const handleEditLocal = useCallback((id: string, updates: Partial<Despesa>) => {
+    setDespesas((prev) => prev.map((d) => (d.id === id ? { ...d, ...updates } : d)));
+  }, []);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -209,9 +219,9 @@ export function Dashboard({ user }: DashboardProps) {
       <main className="mx-auto max-w-7xl p-6">
         <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
           <div className="lg:sticky lg:top-6 lg:self-start">
-            <DespesaForm userId={user.id} />
+            <DespesaForm userId={user.id} itensPorCategoria={itensPorCategoria} onAddItem={addItem} onRemoveItem={removeItem} />
           </div>
-          <DespesaTable despesas={despesasFiltradas} loading={loading} />
+          <DespesaTable despesas={despesasFiltradas} loading={loading} onDelete={handleDeleteLocal} onEdit={handleEditLocal} itensPorCategoria={itensPorCategoria} />
         </div>
       </main>
     </div>
